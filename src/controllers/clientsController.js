@@ -46,6 +46,10 @@ export async function getClientOrder(req, res) {
       [id]
     );
 
+    if(!rows.length) {
+      return res.sendStatus(404);
+    }
+
     return res.status(200).send(rows);
   } catch (error) {}
 }
