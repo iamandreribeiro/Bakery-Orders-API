@@ -67,5 +67,43 @@ export async function getAllOrders(req, res) {
 }
 
 export async function getOrderById(req, res) {
+  const { id } = req.params;
 
+  try {
+    const { rows } = await connectionDB.query(
+      `SELECT * FROM orders WHERE id=$1;`,
+      [id]
+    );
+
+    if (!rows.length) {
+      return res.sendStatus(404);
+    } else {
+      const queryOrders = await connectionDB.query(
+        `SELECT
+        json_build_object('id', clients.id,
+        'name', clients.name,
+        'address', clients.address,
+        'phone', clients.phone) AS client,
+        json_build_object('id', cakes.id,
+        'name', cakes.name,
+        'price', cakes.price,
+        'description', cakes.description,
+        'image', cakes.image) AS cake,
+        orders.id AS "orderId",
+        orders."createdAt", orders.quantity,
+        orders."totalPrice"
+        FROM orders
+        INNER JOIN clients
+        ON orders."clientId" = clients.id
+        INNER JOIN cakes
+        ON orders."cakeId" = cakes.id
+        WHERE orders.id=$1;`,
+        [id]
+      );
+
+      return res.status(200).send(queryOrders.rows);
+    }
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
 }
