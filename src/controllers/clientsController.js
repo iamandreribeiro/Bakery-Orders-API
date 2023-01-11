@@ -51,5 +51,7 @@ export async function getClientOrder(req, res) {
     }
 
     return res.status(200).send(rows);
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
 }
